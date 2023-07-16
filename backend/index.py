@@ -43,7 +43,11 @@ def retrieve_data_columns():
     Returns:
         list: column names for the data
     """
-    columns = cache.get("data").columns.values.tolist()
+    columns = []
+    try:
+        columns = cache.get("data").columns.values.tolist()
+    except AttributeError:
+        columns = []
 
     return jsonify(columns)
 

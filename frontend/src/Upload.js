@@ -9,12 +9,12 @@ function Upload() {
 
   const queryClient = useQueryClient();
 
-  const { status, data, refetch } = useQuery({
+  const { status, data } = useQuery({
     queryKey: ["retrieve_data_columns"],
     queryFn: () => {
       return axios.get("/retrieve_data_columns", { responseType: "json" });
     },
-    enabled: false, // prevent query for automatically running
+    enabled: true, // prevent query for automatically running
     staleTime: "Infinity", // prevent data from going stale
     cacheTime: "Infinity", // prevent cache from being garbage collected
     retry: false, // prevent retries
@@ -36,7 +36,10 @@ function Upload() {
       return axios.post("/upload", formData, config);
     },
     {
-      onSuccess: () => refetch(),
+      onSuccess: () => {
+        // Invalid query cache and forces refetch
+        queryClient.invalidateQueries({ queryKey: ["retrieve_data_columns"] });
+      },
       onError: () => console.log("Error!"),
     }
   );
@@ -70,7 +73,9 @@ function Upload() {
 
       <p>{`${progress}%`}</p>
 
-      <select disabled={status == "success" ? false : true}>
+      <select
+        disabled={status == "success" && data.data.length > 0 ? false : true}
+      >
         {data && data.data.map((opt) => <option key={opt}>{opt}</option>)}
       </select>
     </>
